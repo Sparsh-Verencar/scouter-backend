@@ -2,8 +2,10 @@
 import { db } from '../db/db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config()
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_in_prod';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 const COOKIE_NAME = process.env.COOKIE_NAME || 'auth_token';
 
@@ -13,7 +15,6 @@ function signToken(payload) {
 
 export async function freelancerRegister(req, res) {
   try {
-    const id = 101
     const { email, password, name, phone, experience, category } = req.body ?? {};
     console.log(req.body)
     const [existing] = await db.execute('SELECT * FROM FREELANCER WHERE email = ?', [email]);
@@ -50,9 +51,7 @@ export async function freelancerLogin(req, res) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 1000,
-    });
-
-
+    }); 
     return res.json({ ok: true });
   } catch (err) {
     console.error('login error', err);
@@ -67,6 +66,42 @@ export async function freelancerLogout(req, res) {
   } catch (err) {
     console.error('logout error', err);
     return res.status(500).json({ error: 'Server error' });
+  }
+}
+export async function freelancerDelete(req, res) {
+  try {
+    const token = req.cookies.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    const payload = jwt.verify(token, JWT_SECRET);
+
+    // Get user info BEFORE deleting (optional but recommended)
+    const [existing] = await db.execute(
+      "SELECT * FROM FREELANCER WHERE email = ?",
+      [payload.email]
+    );
+
+    if (existing.length === 0)
+      return res.status(404).json({ error: "User does not exist" });
+
+    // Delete user
+    const [result] = await db.execute(
+      "DELETE FROM FREELANCER WHERE email = ?",
+      [payload.email]
+    );
+
+    res.clearCookie("auth_token");
+
+    return res.json({
+      ok: true,
+      message: "User deleted",
+      deletedUser: existing[0],
+      affectedRows: result.affectedRows,
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Server error" });
   }
 }
 
