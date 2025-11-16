@@ -28,34 +28,60 @@ export async function register(req, res) {
   }
 }
 
+// replace the login export with this debug-friendly version
 export async function login(req, res) {
   try {
     const { email, password } = req.body ?? {};
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
+    console.log('login attempt for email:', email);
+
+    if (!email || !password) {
+      console.warn('login missing fields', { emailPresent: !!email, pwdPresent: !!password });
+      return res.status(400).json({ error: 'Missing fields' });
+    }
 
     const user = await findUserByEmail(email);
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    console.log('findUserByEmail ->', !!user, user ? { id: user.id, email: user.email } : null);
 
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) {
+      // helpful debug: return 401 but include note (remove in prod)
+      return res.status(401).json({ error: 'Invalid credentials (user not found)' });
+    }
+
+    // try possible password fields, be resilient
+    const storedHash =
+      user.passwordHash ?? user.password_hash ?? user.password ?? user.pwd ?? null;
+
+    console.log('storedHash type:', typeof storedHash, 'present:', !!storedHash);
+
+    if (!storedHash || typeof storedHash !== 'string') {
+      console.error('User password field missing or not a string', { user });
+      return res.status(500).json({ error: 'User password not set correctly' });
+    }
+
+    // bcryptjs compare is async
+    const match = await bcrypt.compare(password, storedHash);
+    if (!match) {
+      return res.status(401).json({ error: 'Invalid credentials (bad password)' });
+    }
 
     const token = signToken({ userId: user.id, email: user.email });
 
-    // set HttpOnly cookie
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 1000, // 1 hour
+      maxAge: 60 * 60 * 1000,
       path: '/',
     });
 
     return res.json({ ok: true });
   } catch (err) {
-    console.error('login error', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('login error (stack):', err && err.stack ? err.stack : err);
+    // return stack in dev to speed up debugging (remove in prod)
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
+
 
 export async function logout(req, res) {
   try {
