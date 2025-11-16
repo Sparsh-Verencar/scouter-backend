@@ -6,7 +6,8 @@ import cookieParser from 'cookie-parser';
 
 import { connectToDB, db } from './db/db.js';
 
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/auth.route.js';
+import portfolioRoutes from './routes/portfolio.route.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => res.send('Auth server running'));
 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 
 
 const startServer = async () => {
