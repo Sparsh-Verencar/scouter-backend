@@ -17,7 +17,7 @@ app.use(cookieParser());
 
 const FRONTEND = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
 app.use(cors({
-  origin: FRONTEND,
+  origin: "http://localhost:3000",
   credentials: true,
 }));
 
