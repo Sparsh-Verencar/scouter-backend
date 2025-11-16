@@ -1,5 +1,6 @@
 // controllers/authController.js
 import { findUserByEmail, createUser } from '../db/users.js';
+import { db } from '../db/db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -11,32 +12,36 @@ function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
-export async function register(req, res) {
+export async function freelancerRegister(req, res) {
   try {
-    const { email, password, name } = req.body ?? {};
-    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
-
-    const existing = await findUserByEmail(email);
-    if (existing) return res.status(409).json({ error: 'User already exists' });
+    const id = 101
+    const { email, password, name, phone, experience, category } = req.body ?? {};
+    console.log(req.body)
+    const [existing] = await db.execute('SELECT * FROM FREELANCER WHERE email = ?', [email]);
+    console.log(existing)
+    if (existing.length>0) return res.status(409).json({ error: 'User already exists' });
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await createUser({ email, passwordHash, name });
+    const user = await db.execute(
+      `INSERT INTO FREELANCER(full_name, email, _password, phone, experience, category) VALUES(?, ?, ?, ?, ?, ?)`, [ name, email, passwordHash, phone, experience, category]
+    );
     return res.status(201).json({ ok: true, user });
   } catch (err) {
-    console.error('register error', err);
+    console.log('register error', err);
     return res.status(500).json({ error: 'Server error' });
   }
 }
 
-export async function login(req, res) {
+export async function freelancerLogin(req, res) {
   try {
     const { email, password } = req.body ?? {};
     if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
-
-    const user = await findUserByEmail(email);
+    console.log(req.body)
+    const [user] = await db.execute('SELECT * FROM FREELANCER WHERE email = ?', [email]);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    console.log(user)
 
-    const match = await bcrypt.compare(password, user.passwordHash);
+    const match = await bcrypt.compare(password, user[0]._password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = signToken({ userId: user.id, email: user.email });
@@ -57,29 +62,12 @@ export async function login(req, res) {
   }
 }
 
-export async function logout(req, res) {
+export async function freelancerLogout(req, res) {
   try {
     res.clearCookie(COOKIE_NAME, { path: '/' });
     return res.json({ ok: true });
   } catch (err) {
     console.error('logout error', err);
     return res.status(500).json({ error: 'Server error' });
-  }
-}
-
-export async function me(req, res) {
-  try {
-    const token = req.cookies?.[COOKIE_NAME];
-    if (!token) return res.status(401).json({ error: 'Not logged in' });
-
-    const payload = jwt.verify(token, JWT_SECRET);
-    const user = await findUserByEmail(payload.email);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const { passwordHash, ...safe } = user;
-    return res.json({ user: safe });
-  } catch (err) {
-    console.error('me error', err);
-    return res.status(401).json({ error: 'Invalid token' });
   }
 }

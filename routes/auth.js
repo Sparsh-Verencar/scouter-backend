@@ -1,12 +1,11 @@
 // routes/auth.js
 import express from 'express';
-import { register, login, logout, me } from '../controllers/authController.js';
+import { freelancerLogin, freelancerRegister, freelancerLogout } from '../controllers/authController.js';
 
-const router = express.Router();
+const authRoutes = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.post('/logout', logout);
-router.get('/me', me);
+authRoutes.post('/freelancer-login', freelancerLogin);
+authRoutes.post('/freelancer-register', freelancerRegister);
+authRoutes.post('/freelancer-logout', freelancerLogout);
 
-export default router;
+export default authRoutes;

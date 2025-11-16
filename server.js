@@ -23,6 +23,7 @@ app.use(cors({
 
 app.get('/', (req, res) => res.send('Auth server running'));
 
+
 app.use('/api/auth', authRoutes);
 
 
