@@ -6,6 +6,8 @@ const router = express.Router();
 
 // GET /api/jobs/history
 router.get('/', async (req, res) => {
+    const limit = Number(req.query.limit || 200);
+
   try {
     const [rows] = await db.execute(
       `SELECT history_id, job_id, changed_at, changed_by, operation, old_row, new_row

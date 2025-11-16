@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import jobsRoutes from './routes/jobs.route.js';
+import jobHistoryRoutes from './routes/jobhistory.js';
 
 import { connectToDB, db } from './db/db.js';
 
@@ -25,7 +27,8 @@ app.get('/', (req, res) => res.send('Auth server running'));
 
 
 app.use('/api/auth', authRoutes);
-
+app.use('/api/jobs', jobsRoutes);
+app.use('/api/jobs/history', jobHistoryRoutes);
 
 const startServer = async () => {
   try {
