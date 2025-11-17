@@ -1,7 +1,7 @@
 // routes/recruiter.route.js
 import express from 'express';
-import { getProfile, updateProfile } from '../controllers/recruiterController.js';
-import { createJob, listJobs, getJob, updateJob, deleteJob } from '../controllers/recruiterJobsController.js';
+import { getProfile, updateProfile } from '../controllers/recruiter.controller.js';
+import { createJob, listJobs, getJob, updateJob, deleteJob } from '../controllers/recruiter.jobs.controller.js';
 import { requireRecruiter } from '../middleware/authRecruiter.js';
 
 const router = express.Router();
