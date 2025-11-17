@@ -1,12 +1,13 @@
-// routes/auth.js
+// routes/jobs.route.js
 import express from 'express';
-import { register, login, logout, me } from '../controllers/authController.js';
+import { getUnassignedJobs, applyForJob, getFreeOngoingJobs, finishJob, getCompletedJobs } from '../controllers/jobs.controller.js';
 
-const router = express.Router();
+const jobsRoutes = express.Router();
 
-router.get('/register', register);
-router.post('/login', login);
-router.post('/logout', logout);
-router.get('/me', me);
+jobsRoutes.get('/getFreeJobs', getUnassignedJobs);
+jobsRoutes.get("/getFreeOngoing", getFreeOngoingJobs);
+jobsRoutes.post("/apply", applyForJob);
+jobsRoutes.put("/finishJob", finishJob);
+jobsRoutes.get("/getCompletedJobs", getCompletedJobs);
 
-export default router;
+export default jobsRoutes;
