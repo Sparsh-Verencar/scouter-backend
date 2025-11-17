@@ -184,3 +184,35 @@ export async function finishJob(req, res) {
     return res.status(500).json({ error: "Server error" });
   }
 }
+
+export async function getCompletedJobs(req, res) {
+  try {
+    const token = req.cookies?.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    // Get freelancer_id
+    const [freelancerRows] = await db.execute(
+      "SELECT freelancer_id FROM FREELANCER WHERE email = ?",
+      [email]
+    );
+
+    if (freelancerRows.length === 0)
+      return res.status(404).json({ error: "Freelancer not found" });
+
+    const freelancer_id = freelancerRows[0].freelancer_id;
+
+    // Fetch completed jobs
+    const [jobs] = await db.execute(
+      "SELECT * FROM JOB WHERE freelancer_id = ? AND status = 'Finished'",
+      [freelancer_id]
+    );
+
+    return res.json(jobs);
+  } catch (err) {
+    console.error("Error fetching completed jobs:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
