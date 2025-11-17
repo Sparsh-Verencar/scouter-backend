@@ -11,6 +11,7 @@ import { connectToDB, db } from './db/db.js';
 import authRoutes from './routes/auth.route.js';
 import portfolioRoutes from './routes/portfolio.route.js';
 import projectRoutes from './routes/projects.route.js';
+import jobsRoutes from './routes/jobs.route.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/jobs/history', jobHistoryRoutes);app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/jobs', jobsRoutes);
 
 
 const startServer = async () => {
