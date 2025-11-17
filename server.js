@@ -8,6 +8,7 @@ import { connectToDB, db } from './db/db.js';
 
 import authRoutes from './routes/auth.route.js';
 import portfolioRoutes from './routes/portfolio.route.js';
+import projectRoutes from './routes/projects.route.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.get('/', (req, res) => res.send('Auth server running'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/projects', projectRoutes);
 
 
 const startServer = async () => {
