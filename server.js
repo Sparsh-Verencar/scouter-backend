@@ -8,7 +8,9 @@ import jobHistoryRoutes from './routes/jobhistory.js';
 
 import { connectToDB, db } from './db/db.js';
 
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/auth.route.js';
+import portfolioRoutes from './routes/portfolio.route.js';
+import projectRoutes from './routes/projects.route.js';
 
 dotenv.config();
 
@@ -19,7 +21,7 @@ app.use(cookieParser());
 
 const FRONTEND = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
 app.use(cors({
-  origin: FRONTEND,
+  origin: "http://localhost:3000",
   credentials: true,
 }));
 
@@ -28,7 +30,9 @@ app.get('/', (req, res) => res.send('Auth server running'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
-app.use('/api/jobs/history', jobHistoryRoutes);
+app.use('/api/jobs/history', jobHistoryRoutes);app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/projects', projectRoutes);
+
 
 const startServer = async () => {
   try {
