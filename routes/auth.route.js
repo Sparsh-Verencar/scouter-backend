@@ -1,6 +1,7 @@
 // routes/auth.js
 import express from 'express';
-import { freelancerLogin, freelancerRegister, freelancerLogout,freelancerDelete, freeMe   } from '../controllers/auth.controller.js';
+import { freelancerLogin, freelancerRegister, freelancerLogout,freelancerDelete, freeMe   } 
+from '../controllers/auth.controller.js';
 
 const authRoutes = express.Router();
 
