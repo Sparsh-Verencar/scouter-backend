@@ -216,3 +216,50 @@ export async function getCompletedJobs(req, res) {
     return res.status(500).json({ error: "Server error" });
   }
 }
+
+export async function getFreelancerStats(req, res) {
+  try {
+    const token = req.cookies?.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    // Verify JWT
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    // Get freelancer_id
+    const [freelancer] = await db.execute(
+      "SELECT freelancer_id FROM FREELANCER WHERE email = ?",
+      [email]
+    );
+
+    if (freelancer.length === 0) {
+      return res.status(404).json({ error: "Freelancer not found" });
+    }
+
+    const freelancer_id = freelancer[0].freelancer_id;
+
+    // Get counts grouped by status
+    const [rows] = await db.execute(
+      `SELECT status, COUNT(*) AS count
+       FROM JOB
+       WHERE freelancer_id = ?
+       GROUP BY status`,
+      [freelancer_id]
+    );
+
+    // Initialize stats
+    let stats = { totalApplied: 0, ongoing: 0, finished: 0 };
+    // Aggregate results
+    for (let row of rows) {
+      stats.totalApplied += row.count;
+      if (row.status === "Ongoing") stats.ongoing = row.count;
+      else if (row.status === "Finished") stats.finished = row.count;
+    }
+    console.log(stats)
+
+    return res.json(stats);
+  } catch (err) {
+    console.error("[getFreelancerStats] ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
