@@ -58,74 +58,96 @@ export async function getFreelancerProjects(req, res) {
 }
 export async function createFreelancerProjects(req, res) {
   try {
-    // 1. Log cookies
-    console.log("Cookies received:", req.cookies);
+    console.log("\n================= NEW REQUEST: createFreelancerProjects =================");
 
-    const token = req.cookies?.auth_token; // cookie name
-    console.log("Token extracted:", token);
+    // 1. Log cookies
+    console.log("📌 Step 1: Cookies received from client:", req.cookies);
+
+    const token = req.cookies?.auth_token;
+    console.log("📌 Step 2: Extracted token:", token);
 
     if (!token) {
+      console.log("❌ No token found in cookies.");
       return res.status(401).json({ error: "Not logged in" });
     }
 
     // 2. Verify token
     let payload;
     try {
+      console.log("📌 Step 3: Verifying JWT...");
       payload = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("JWT payload:", payload);
+      console.log("✅ JWT verified successfully. Payload:", payload);
     } catch (err) {
-      console.error("JWT verification failed:", err);
+      console.error("❌ JWT verification failed:", err);
       return res.status(401).json({ error: "Invalid token" });
     }
 
     // 3. Extract email
     const email = payload.email;
-    console.log("Email extracted:", email);
+    console.log("📌 Step 4: Email extracted from payload:", email);
 
     // 4. Get freelancer_id from email
+    console.log("📌 Step 5: Fetching freelancer_id for email...");
     const [freelancer] = await db.execute(
       "SELECT freelancer_id FROM FREELANCER WHERE email = ?",
       [email]
     );
-    console.log("Freelancer lookup:", freelancer);
+    console.log("📌 SQL Result (Freelancer lookup):", freelancer);
 
     if (!freelancer.length) {
+      console.log("❌ No freelancer found with this email.");
       return res.status(404).json({ error: "Freelancer not found" });
     }
 
     const freelancer_id = freelancer[0].freelancer_id;
-    console.log("Freelancer ID:", freelancer_id);
+    console.log("✅ Freelancer ID:", freelancer_id);
 
     // 5. Extract project data from frontend
+    console.log("📌 Step 6: Extracting project data from request body...");
+    console.log("Request body:", req.body);
+
     const { project_title, project_description, project_link } = req.body;
 
+    console.log("Parsed Data:");
+    console.log("   Title:", project_title);
+    console.log("   Description:", project_description);
+    console.log("   Link:", project_link);
+
     if (!project_title || !project_description) {
+      console.log("❌ Missing title or description");
       return res.status(400).json({ error: "Title and description are required" });
     }
 
     // 6. Get portfolio_id for this freelancer
+    console.log("📌 Step 7: Fetching portfolio_id for freelancer...");
     const [portfolio] = await db.execute(
       "SELECT portfolio_id FROM PORTFOLIO WHERE freelancer_id = ?",
       [freelancer_id]
     );
-    console.log("Portfolio lookup:", portfolio);
+    console.log("📌 SQL Result (Portfolio lookup):", portfolio);
 
     if (portfolio.length === 0) {
+      console.log("❌ No portfolio found for this freelancer.");
       return res.status(404).json({ error: "Portfolio not found for this freelancer" });
     }
 
     const portfolio_id = portfolio[0].portfolio_id;
+    console.log("✅ Portfolio ID:", portfolio_id);
 
     // 7. Insert the project
+    console.log("📌 Step 8: Inserting project into database...");
     const [result] = await db.execute(
-      `INSERT INTO PROJECTS (portfolio_id, project_title, project_description, project_link)
+      `INSERT INTO PROJECTS 
+       (portfolio_id, project_title, project_description, project_link)
        VALUES (?, ?, ?, ?)`,
       [portfolio_id, project_title, project_description, project_link]
     );
 
-    console.log("Project insert result:", result);
+    console.log("📌 SQL Insert Result:", result);
 
     // 8. Send response
+    console.log("✅ Project inserted successfully with ID:", result.insertId);
+
     res.status(201).json({
       message: "Project added successfully",
       project: {
@@ -137,8 +159,10 @@ export async function createFreelancerProjects(req, res) {
       },
     });
 
+    console.log("================= END REQUEST =================\n");
+
   } catch (err) {
-    console.error("Error in createFreelancerProjects:", err);
+    console.error("❌ Error in createFreelancerProjects:", err);
     res.status(500).json({ error: "Server error" });
   }
 }

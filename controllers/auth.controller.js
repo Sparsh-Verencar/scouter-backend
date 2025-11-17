@@ -38,8 +38,9 @@ export async function freelancerLogin(req, res) {
     if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
     console.log(req.body)
     const [user] = await db.execute('SELECT * FROM FREELANCER WHERE email = ?', [email]);
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    console.log(user)
+if (user.length === 0) {
+      return res.status(404).json({ error: "No account found. Please register first." });
+    }    console.log(user)
 
     const match = await bcrypt.compare(password, user[0]._password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
