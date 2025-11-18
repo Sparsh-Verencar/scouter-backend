@@ -242,3 +242,75 @@ export async function getFreelancerStats(req, res) {
     return res.status(500).json({ error: "Server error" });
   }
 }
+
+
+export async function recCreateJobs(req, res) {
+  try {
+    const token = req.cookies?.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    const { title, _description, salary, location, category } = req.body;
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    // Find recruiter ID
+    const [row] = await db.execute(
+      "SELECT recruiter_id FROM RECRUITER WHERE email = ?",
+      [email]
+    );
+
+    if (row.length === 0)
+      return res.status(404).json({ error: "Recruiter not found" });
+
+    const recruiter_id = row[0].recruiter_id;
+
+    // Insert job
+    const [job] = await db.execute(
+      `INSERT INTO JOB (recruiter_id, title, _description, salary, location, category)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [recruiter_id, title, _description, salary, location, category]
+    );
+
+    return res.json({
+      message: "Job created successfully",
+    });
+
+  } catch (err) {
+    console.error("Create Job Error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
+export async function recGetJobs(req, res) {
+  try {
+    const token = req.cookies?.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    // Find recruiter
+    const [rows] = await db.execute(
+      "SELECT recruiter_id FROM RECRUITER WHERE email = ?",
+      [email]
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ error: "Recruiter not found" });
+
+    const recruiter_id = rows[0].recruiter_id;
+
+    // Fetch all jobs
+    const [jobs] = await db.execute(
+      "SELECT job_id, title, _description, salary, location, category, created_at FROM JOB WHERE recruiter_id = ? ORDER BY created_at DESC",
+      [recruiter_id]
+    );
+
+    return res.json(jobs);
+
+  } catch (err) {
+    console.error("Get Jobs Error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
