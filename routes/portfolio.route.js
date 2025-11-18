@@ -6,5 +6,8 @@ const portfolioRoutes = express.Router();
 
 portfolioRoutes.get("/me", getPortfolio);
 portfolioRoutes.post("/create", createPortfolio);
+//recruiter stuff
+portfolioRoutes.get("/rec-me", getPortfolio);
+portfolioRoutes.post("/create", createPortfolio);
 
 export default portfolioRoutes;
