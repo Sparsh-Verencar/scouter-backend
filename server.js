@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import jobsRoutes from './routes/jobs.route.js';
-import jobHistoryRoutes from './routes/job.history.js';
+import jobHistoryRoutes from './routes/job.history.route.js';
 import { connectToDB, db } from './db/db.js';
 import authRoutes from './routes/auth.route.js';
 import portfolioRoutes from './routes/portfolio.route.js';
