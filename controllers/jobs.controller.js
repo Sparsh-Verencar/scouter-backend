@@ -367,3 +367,34 @@ export async function getRecOngoing(req, res) {
     return res.status(500).json({ error: "Server error" });
   }
 }
+
+export async function getRecCompletedJobs(req, res) {
+  try {
+    const token = req.cookies?.auth_token;
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    const [f] = await db.execute(
+      "SELECT recruiter_id FROM RECRUITER WHERE email = ?",
+      [email]
+    );
+    if (f.length === 0)
+      return res.status(404).json({ error: "RECRUITER not found" });
+
+    const recruiter_id = f[0].recruiter_id;
+
+    const [jobs] = await db.execute(
+      `SELECT * from JOB NATURAL JOIN SUBMISSION
+       WHERE recruiter_id = ?
+       AND status = 'Finished'`,
+      [recruiter_id]
+    );
+
+    return res.json(jobs);
+  } catch (err) {
+    console.error("getCompletedJobs ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
