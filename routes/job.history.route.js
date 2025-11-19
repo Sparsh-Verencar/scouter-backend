@@ -7,13 +7,6 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // Debug: show DB name
-    try {
-      const [[{ db: currentDb }]] = await db.execute("SELECT DATABASE() AS db");
-      console.log("jobHistory route using DB:", currentDb);
-    } catch (e) {
-      console.warn("Could not run SELECT DATABASE():", e.message);
-    }
-
     // --- FIXED: use the limit variable ---
     const [rows] = await db.execute(
       `SELECT 
