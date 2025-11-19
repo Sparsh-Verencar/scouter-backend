@@ -191,7 +191,7 @@ export async function getCompletedJobs(req, res) {
        AND status = 'Finished'`,
       [freelancer_id]
     );
-
+        
     return res.json(jobs);
   } catch (err) {
     console.error("getCompletedJobs ERROR:", err);
@@ -386,7 +386,7 @@ export async function getRecCompletedJobs(req, res) {
     const recruiter_id = f[0].recruiter_id;
 
     const [jobs] = await db.execute(
-      `SELECT * from JOB NATURAL JOIN SUBMISSION natural join FREELANCER
+      `SELECT * from JOB NATURAL JOIN SUBMISSION s join FREELANCER f on s.freelancer_id = f.freelancer_id
        WHERE recruiter_id = ?
        AND status = 'Finished'`,
       [recruiter_id]
