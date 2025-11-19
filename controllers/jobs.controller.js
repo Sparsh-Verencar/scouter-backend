@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 export async function getUnassignedJobs(req, res) {
   try {
     const [jobs] = await db.execute(
-      `SELECT * FROM JOB 
+      `SELECT * FROM JOB natural join recruiter
        WHERE status = 'Open'`
     );
     console.log(jobs)
