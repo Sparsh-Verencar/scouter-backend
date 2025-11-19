@@ -386,12 +386,12 @@ export async function getRecCompletedJobs(req, res) {
     const recruiter_id = f[0].recruiter_id;
 
     const [jobs] = await db.execute(
-      `SELECT * from JOB NATURAL JOIN SUBMISSION
+      `SELECT * from JOB NATURAL JOIN SUBMISSION natural join FREELANCER
        WHERE recruiter_id = ?
        AND status = 'Finished'`,
       [recruiter_id]
     );
-
+    console.log(jobs)
     return res.json(jobs);
   } catch (err) {
     console.error("getCompletedJobs ERROR:", err);
