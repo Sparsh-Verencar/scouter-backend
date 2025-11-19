@@ -231,7 +231,7 @@ export async function getFreelancerStats(req, res) {
     const stats = { totalApplied: 0, ongoing: 0, finished: 0 };
 
     for (const row of rows) {
-      stats.totalApplied  += row.count;
+      stats.totalApplied += row.count;
       if (row.status === "Ongoing") stats.ongoing = row.count;
       if (row.status === "Finished") stats.finished = row.count;
     }
@@ -351,10 +351,25 @@ export async function getRecOngoing(req, res) {
     // Fetch Ongoing jobs with submission JOIN
     const [jobs] = await db.execute(
       `
-      SELECT * FROM JOB
-      NATURAL JOIN SUBMISSION
-      WHERE recruiter_id = ?
-      AND status = 'Ongoing'
+      SELECT 
+    J.job_id,
+    J.title,
+    J.salary,
+    J._description,
+    J.status,
+    J.recruiter_id,
+
+    S.submission_id,
+    S.freelancer_id,
+    S.submission_link,
+
+    F.full_name,
+    F.email,
+    F.phone
+FROM JOB J JOIN SUBMISSION S ON J.job_id = S.job_id JOIN FREELANCER F ON S.freelancer_id = F.freelancer_id
+WHERE J.recruiter_id = ?
+  AND J.status = 'Ongoing';
+
       `,
       [recruiter_id]
     );

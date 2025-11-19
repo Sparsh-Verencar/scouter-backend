@@ -29,7 +29,8 @@ app.get('/', (req, res) => res.send('Auth server running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/jobs', jobsRoutes);
-app.use('/api/jobs/history', jobHistoryRoutes);app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/jobs/history', jobHistoryRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/projects', projectRoutes);
 
 
