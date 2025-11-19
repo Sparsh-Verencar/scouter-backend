@@ -2,13 +2,24 @@
 import express from 'express';
 import { freelancerLogin, freelancerRegister, freelancerLogout,freelancerDelete, freeMe   } 
 from '../controllers/auth.controller.js';
+import { recruiterLogin, recruiterRegister, recruiterLogout,recruiterDelete, recMe   } 
+from '../controllers/auth.controller.js';
+import { adminLogin } from "../controllers/auth.controller.js"
 
 const authRoutes = express.Router();
-
+// freelancer routes
 authRoutes.post('/freelancer-login', freelancerLogin);
 authRoutes.post('/freelancer-register', freelancerRegister);
 authRoutes.post('/freelancer-logout', freelancerLogout);
 authRoutes.delete('/freelancer-delete', freelancerDelete);
 authRoutes.get('/free-me', freeMe);
+// recruiter routes
+authRoutes.post('/recruiter-login', recruiterLogin);
+authRoutes.post('/recruiter-register', recruiterRegister);
+authRoutes.post('/recruiter-logout', recruiterLogout);
+authRoutes.delete('/recruiter-delete', recruiterDelete);
+authRoutes.get('/rec-me', recMe);
+
+authRoutes.post('/admin-login', adminLogin);
 
 export default authRoutes;
