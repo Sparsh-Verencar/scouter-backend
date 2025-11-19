@@ -219,6 +219,38 @@ export async function recruiterDelete(req, res) {
     res.status(500).json({ error: "Server error" });
   }
 }
+// ======================
+// ADMIN LOGIN CONTROLLER
+// ======================
+export async function adminLogin(req, res) {
+  try {
+    const { password } = req.body || {};
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+    if (!password) {
+      return res.status(400).json({ ok: false, error: "Password required" });
+    }
+
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ ok: false, error: "Incorrect admin password" });
+    }
+
+    // set cookie
+    res.cookie("admin_auth", "true", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+      path: "/",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+
+    return res.json({ ok: true, message: "Admin authenticated" });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
+}
+
 
 export async function recMe(req, res) {
   try {
