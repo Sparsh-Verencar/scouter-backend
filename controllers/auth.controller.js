@@ -127,12 +127,13 @@ export async function freeMe(req, res) {
 //recruiter routes
 export async function recruiterRegister(req, res) {
   try {
+    console.log("-----recruiter register-------")
     const { full_name, company_name, email, password, phone } = req.body ?? {};
-    console.log(req.body)
+    console.log(`req.body: ${req.body}`)
     const [existing] = await db.execute('SELECT * FROM RECRUITER WHERE email = ?', [email]);
-    console.log(existing)
+    console.log(`existing: ${existing}`)
     if (existing.length > 0) return res.status(409).json({ error: 'User already exists' });
-
+    
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await db.execute(
       `INSERT INTO RECRUITER(full_name, company_name, email, _password, phone) VALUES(?, ?, ?, ?, ?)`, [full_name, company_name, email, passwordHash, phone]
@@ -146,6 +147,7 @@ export async function recruiterRegister(req, res) {
 
 export async function recruiterLogin(req, res) {
   try {
+    console.log("-----recruiter login-------")
     const { email, password } = req.body ?? {};
     if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
     console.log(req.body)
@@ -156,8 +158,8 @@ if (user.length === 0) {
 
     const match = await bcrypt.compare(password, user[0]._password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
-
     const token = signToken({ email: user[0].email });
+    console.log(`token:${token}`)
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: false,
@@ -237,7 +239,7 @@ export async function recMe(req, res) {
 
     // 3. Fetch recruiter
     const [rows] = await db.execute(
-      "SELECT full_name, email FROM RECRUITER WHERE email = ?",
+      "SELECT * FROM RECRUITER WHERE email = ?",
       [payload.email]
     );
 

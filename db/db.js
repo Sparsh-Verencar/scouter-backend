@@ -20,7 +20,4 @@ const connectToDB = async ()=>{
         process.exit(-1)
     }
 }
-
-
-
 export {connectToDB, db}
