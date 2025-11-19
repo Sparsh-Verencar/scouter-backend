@@ -314,3 +314,56 @@ export async function recGetJobs(req, res) {
     return res.status(500).json({ error: "Server error" });
   }
 }
+
+export async function getRecOngoing(req, res) {
+  try {
+    console.log("📌 [getRecOngoing] Incoming request");
+
+    const token = req.cookies?.auth_token;
+    console.log("🔍 Token:", token);
+
+    if (!token) {
+      console.log("❌ No auth token found");
+      return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const email = decoded.email;
+
+    console.log("📨 Decoded email:", email);
+
+    // Fetch recruiter_id
+    const [f] = await db.execute(
+      "SELECT recruiter_id FROM RECRUITER WHERE email = ?",
+      [email]
+    );
+
+    console.log("🧪 Recruiter lookup result:", f);
+
+    if (f.length === 0) {
+      console.log("❌ Recruiter not found for email:", email);
+      return res.status(404).json({ error: "Recruiter not found" });
+    }
+
+    const recruiter_id = f[0].recruiter_id;
+    console.log("✅ Recruiter ID:", recruiter_id);
+
+    // Fetch Ongoing jobs with submission JOIN
+    const [jobs] = await db.execute(
+      `
+      SELECT * FROM JOB
+      NATURAL JOIN SUBMISSION
+      WHERE recruiter_id = ?
+      AND status = 'Ongoing'
+      `,
+      [recruiter_id]
+    );
+
+    console.log("📌 Ongoing Jobs Found:", jobs);
+
+    return res.json(jobs);
+  } catch (err) {
+    console.error("❌ getRecOngoing ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
